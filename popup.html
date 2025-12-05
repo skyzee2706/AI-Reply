@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Yapping by Skyzee</title>
+  <style>
+    body { width: 340px; padding: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; margin: 0; }
+    
+    h2 { margin-top: 0; font-size: 18px; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; justify-content: space-between;}
+    
+    .field { margin-bottom: 14px; }
+    
+    input, textarea, select { 
+      width: 100%; box-sizing: border-box; padding: 10px; 
+      background: #1e293b; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #3b82f6; }
+    
+    button { 
+      width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; 
+      cursor: pointer; border-radius: 8px; font-weight: 600; transition: transform 0.1s; 
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+    button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; background: #475569; }
+
+    label { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .footer {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #3b82f6; }
+    .dev-info { display: flex; flex-direction: column; }
+    .dev-label { font-size: 10px; color: #94a3b8; }
+    .dev-link { color: #3b82f6; text-decoration: none; font-weight: bold; font-size: 14px; }
+    
+    #status { font-size: 12px; text-align: center; margin-top: 10px; min-height: 16px; color: #4ade80; }
+    .hint { font-size: 10px; color: #64748b; margin-top: 4px; }
+
+    /* --- LOCK SCREEN STYLES --- */
+    #lockScreen { text-align: center; padding: 20px 0; }
+    .lock-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+    #billingCode { 
+      text-align: center; font-family: monospace; letter-spacing: 3px; font-size: 18px; 
+      text-transform: uppercase; border-color: #f59e0b;
+    }
+
+    /* SUBSCRIPTION INFO */
+    .sub-info {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .sub-label { font-size: 11px; color: #94a3b8; }
+    .sub-date { font-size: 12px; font-weight: bold; color: #4ade80; }
+    
+    .hidden { display: none !important; }
+    .badge { background: #10b981; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <h2>
+    <span>🤖 Auto Yapping</span>
+    <span id="verifiedBadge" class="badge hidden">PRO</span>
+  </h2>
+  
+  <!-- SCREEN 1: LOCKED VIEW (EXPIRED OR NEW) -->
+  <div id="lockScreen">
+    <span class="lock-icon">🔒</span>
+    <p id="lockMsg" style="color: #cbd5e1; font-size: 14px; margin-bottom: 20px;">
+      Extension is Locked.<br>Enter a valid billing code to activate.
+    </p>
+    
+    <div class="field">
+      <input type="text" id="billingCode" placeholder="ABC1234" maxlength="6">
+    </div>
+
+    <button id="unlockBtn">🔓 Activate License</button>
+    <div id="lockStatus" style="margin-top: 10px; font-size: 12px;"></div>
+  </div>
+
+  <!-- SCREEN 2: SETTINGS VIEW (HIDDEN INITIALLY) -->
+  <div id="settingsScreen" class="hidden">
+    
+    <!-- SUBSCRIPTION INFO BAR -->
+    <div class="sub-info">
+        <div>
+            <div class="sub-label">SUBSCRIPTION ACTIVE</div>
+            <div class="sub-label" style="font-size: 9px; opacity: 0.7;">Expires on:</div>
+        </div>
+        <div id="expiryDateDisplay" class="sub-date">...</div>
+    </div>
+
+    <div class="field">
+      <label>⚡ AI Provider</label>
+      <select id="provider">
+        <option value="groq">Groq (Llama 3.1-8b)</option>
+        <option value="openai">OpenAI (GPT-4o Mini)</option>
+        <option value="gemini">Google Gemini (2.0 Flash)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label id="keyLabel">🔑 Groq API Key</label>
+      <input type="password" id="apiKey" placeholder="Enter API Key...">
+      <div class="hint">Keys are stored securely in your browser.</div>
+    </div>
+
+    <div class="field">
+      <label>✨ Custom Prompt</label>
+      <textarea id="prompt" rows="3" placeholder="e.g. You are a helpful assistant..."></textarea>
+    </div>
+
+    <button id="saveBtn">💾 Save Configuration</button>
+    <div id="saveStatus" style="margin-top: 10px; font-size: 12px;"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <img src="https://unavatar.io/twitter/SuperSkyzee" alt="Skyzee" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Skyzee&background=random'">
+    <div class="dev-info">
+      <span class="dev-label">Created by</span>
+      <a href="https://twitter.com/SuperSkyzee" target="_blank" class="dev-link">Skyzee &#x2197;</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
