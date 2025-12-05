@@ -9,7 +9,7 @@ Browser extension for Twitter/X that adds AI reply buttons (Agree, Ask, Funny, D
 - **Privacy Focused**: API Keys are stored locally in your browser.
 
 ## Setup
-1. Download this folder.
+1. Download all file and save to one folder.
 2. Open Chrome and go to `chrome://extensions`.
 3. Enable **Developer Mode** (top right).
 4. Click **Load unpacked** and select this folder.
