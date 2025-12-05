@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Auto Yapping by Skyzee (Pro)",
+  "version": "5.0",
+  "description": "Smart AI Reply with Premium License System.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://twitter.com/*", "https://x.com/*", "https://pro.x.com/*",
+    "https://*.firebaseio.com/*", "https://*.googleapis.com/*",
+    "https://api.openai.com/*", "https://api.anthropic.com/*", 
+    "https://api.groq.com/*", "https://api.mistral.ai/*"
+  ],
+  "action": { "default_popup": "popup.html", "default_title": "Auto Yapping" },
+  "content_scripts": [ { "matches": ["https://twitter.com/*", "https://x.com/*", "https://pro.x.com/*"], "js": ["content.js"], "run_at": "document_idle" } ],
+  "web_accessible_resources": [ { "resources": ["firebase-app.js", "firebase-auth.js", "firebase-firestore.js"], "matches": ["<all_urls>"] } ]
+}

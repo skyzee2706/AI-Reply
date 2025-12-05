@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"><title>Admin Panel - Skyzee</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div id="root" class="h-screen flex items-center justify-center text-slate-400">Loading...</div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" data-type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {"apiKey":"AIzaSyAKmACWwB3Iwr7SQz98Tn-F-MwlGnsYN5o","authDomain":"ai-reply-skyzee.firebaseapp.com","projectId":"ai-reply-skyzee","storageBucket":"ai-reply-skyzee.firebasestorage.app","messagingSenderId":"435213676254","appId":"1:435213676254:web:644591b77ce25d0c6b9c4f","measurementId":"G-ZXRG35QFJ0"};
+        const APP_ID = 'x-reply-skyzee-store';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const { useState, useEffect } = React;
+
+        function AdminApp() {
+            const [user, setUser] = useState(null);
+            const [codes, setCodes] = useState([]);
+            useEffect(() => { signInAnonymously(auth).then(u => setUser(u.user)).catch(e => alert(e.message)); }, []);
+            useEffect(() => {
+                if (!user) return;
+                return onSnapshot(query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'codes')), (snap) => {
+                    const list = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                    list.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                    setCodes(list);
+                });
+            }, [user]);
+
+            const generate = async (days, label) => {
+                const code = Math.random().toString(36).substring(2,7).toUpperCase();
+                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'codes', code), {
+                    code, durationDays: days, durationLabel: label, isUsed: false, createdAt: serverTimestamp(), createdBy: user.uid
+                });
+            };
+
+            if (!user) return <div className="h-screen flex items-center justify-center">Connecting...</div>;
+
+            return (
+                <div className="max-w-4xl mx-auto p-8">
+                    <div className="flex justify-between items-center mb-8"><h1 className="text-2xl font-bold flex items-center gap-2"><i data-lucide="shield-check"></i> Skyzee Admin</h1><span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">Online</span></div>
+                    <div className="bg-white p-6 rounded-xl shadow mb-8 grid grid-cols-3 gap-4">
+                        <button onClick={()=>generate(30, 'Bulanan')} className="p-4 bg-indigo-600 text-white rounded-lg font-bold">Bulanan (30 Hari)</button>
+                        <button onClick={()=>generate(365, 'Tahunan')} className="p-4 bg-emerald-600 text-white rounded-lg font-bold">Tahunan (365 Hari)</button>
+                        <button onClick={()=>generate(1/24, 'Trial')} className="p-4 bg-orange-500 text-white rounded-lg font-bold">Trial (1 Jam)</button>
+                    </div>
+                    <div className="bg-white rounded-xl shadow overflow-hidden">
+                         <div className="p-4 bg-slate-50 font-bold border-b">Active Codes ({codes.length})</div>
+                         <div className="max-h-[500px] overflow-auto">
+                            {codes.map(c => (
+                                <div key={c.id} className="p-4 border-b flex justify-between items-center hover:bg-slate-50">
+                                    <div><div className="font-mono font-bold text-lg">{c.code}</div><div className="text-xs text-slate-500">{c.durationLabel} • {c.isUsed ? '❌ Used' : '✅ Ready'}</div></div>
+                                    {!c.isUsed && <button onClick={() => {navigator.clipboard.writeText(c.code); alert('Copied!')}} className="px-3 py-1 bg-slate-800 text-white text-xs rounded">Copy</button>}
+                                </div>
+                            ))}
+                         </div>
+                    </div>
+                </div>
+            );
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AdminApp />);
+        setTimeout(() => lucide.createIcons(), 1000);
+    </script>
+</body>
+</html>
